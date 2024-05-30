@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## MobiGeaR (Mobility Generation as Reasoning)  
 
 #### Framework:
@@ -41,3 +42,10 @@ Eval: Statistical Evaluation:
 ```shell
 python eval.py --trajPath TrajectoryRes
 ```
+=======
+Submission for NeurIPS 2024
+
+
+
+
+>>>>>>> 16edf5db8d5323b8e444a61d9425816e2cacd681

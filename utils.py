@@ -96,8 +96,6 @@ def setOpenAi(keyid = 0):
     Set the Internet access port and key.
     '''
 
-        
-    # 下面的5个key是实验室的key
     if keyid == 0:
         openai.api_key = ""
     elif keyid == 1:
@@ -108,8 +106,6 @@ def setOpenAi(keyid = 0):
         openai.api_key = ""
     elif keyid == 4:
         openai.api_key = ""
-        
-   
         
     addtoken(-1)
     return 0

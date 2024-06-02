@@ -52,7 +52,7 @@ We are making the Tencent dataset we use open source [ link: https://pan.baidu.c
 
 ### :sparkles: Finetuned Params of LLaMA 3-8B:
 The dataset for finetuning is in the path *'LLaMA_Finetune\Dataset'*.
-The finetuned params are in the path *'LLaMA_Finetune\0515_v5_intent&time_2_epoch'*.
+The finetuned params are in the path *'LLaMA_Finetune\0515_v5_intent&time_2_epoch'*. (There seems to be some problem with the display in the anonymous repository, but it is normal after downloading. There are 13 files in the folder.)
 You need to merge the params with initial LLaMA3-8B version following https://github.com/hiyouga/LLaMA-Factory/blob/main/examples/README.md
 
 Thanks for the help from the great work [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory/tree/main).

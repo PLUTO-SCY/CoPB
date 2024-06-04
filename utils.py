@@ -14,7 +14,6 @@ MODEL = "gpt-3.5-turbo"
 
 
 def printSeq(seq):
-    # 其实就是一个把序列逐元素打印的函数
     for item in seq:
         print(item)
 
@@ -126,8 +125,8 @@ def printQA(Q, A, logger, additional_info = ''):
     
 def addtoken(num):
     try:
-        with open("tokens.txt", "r") as f:  # 打开文件
-            data = f.read()  # 读取文件
+        with open("tokens.txt", "r") as f:  
+            data = f.read()  
             nownum = int(data)        
             
         if num == -1:
@@ -136,14 +135,12 @@ def addtoken(num):
             nownum = nownum + num
         
         with open("tokens.txt","w+") as f:
-            f.write(str(nownum))  # 自带文件关闭功能，不需要再写f.close()
+            f.write(str(nownum))
     except:
         pass
-    
-    # print('add tokens num', num)
-    
+
 def timeEval(dis):
-    return int(dis/70)  # 时间评估的结果只返回一个整数,这其实是一个比较简陋的估计
+    return int(dis/70) 
 
 def calTime(start, duration):
     h1, m1  = start.split(':')
@@ -168,14 +165,13 @@ def turntime2list(time):
     return (time[0], time[1])
 
 def getDirectEventID(event):
-    # 直接从event查询具体的POI, 也不再问具体的类目
     if event in ['have breakfast', 'have lunch', 'have dinner', 'eat']:
         return "10"
     elif event == 'do shopping':
         return "13"
     elif event == 'do sports':
         return "18"
-    elif event == 'excursion':  # 这里指短期的旅游景点
+    elif event == 'excursion': 
         return "22"
     elif event == 'leisure or entertainment':
         return "16"

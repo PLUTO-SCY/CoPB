@@ -363,7 +363,7 @@ def genDataProcess(trace, map):
 
 def readGenTraces(map, folderName):
     traces = []
-    filePath = 'Results/{}/Res0'.format(folderName)  # 是从中罗列文件名，那就不怕了.
+    filePath = 'Results/{}/Res0'.format(folderName)
     allfiles = os.listdir(filePath)
     
     success = 0

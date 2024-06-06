@@ -18,7 +18,7 @@ GPT_MODEL = "gpt-4-turbo-preview"
 parser = argparse.ArgumentParser(description='gen DayIntention multi-step')
 parser.add_argument('--keyid', default = 0, type=int)  
 parser.add_argument('--TemplateRes_PATH', default = 'TemplateRes', type=str)
-parser.add_argument('--mode_choice', default = 'labeld', type=str)  # realRatio
+parser.add_argument('--mode_choice', default = 'realRatio', type=str)  # realRatio
 args = parser.parse_args()
 
 if __name__ == '__main__':

@@ -6,7 +6,6 @@ import time
 
 import numpy as np
 
-from All_In_One_Utils import *
 from setBasicData import *
 from utils import *
 
@@ -104,8 +103,7 @@ Answer format: [intent1, intent2, intent3...]""".format(nowTime)
                 Q2 = [{"role": "user", "content": """How long will you spend on this arrangement?
 You must consider some fragmented time, such as 3 hours plus 47 minute, and 7 hours and 13 minutes.
 Please answer as a list: [x,y]. Which means x hours and y minutes."""}]
-                nowQ = nowQ + Q2
-                
+                nowQ = nowQ + Q2 
 
                 genOK = False
                 while not genOK:

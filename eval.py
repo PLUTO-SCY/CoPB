@@ -13,15 +13,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats
 import setproctitle
-from pywolong.map import Map
+from pycitysim.map import Map
 
 from utils import *
 
 
 def drawTwoBars(values1, values2, afterName="", path="."):
     
-    # print(values1.shape)
-    # print(values2.shape)
     values1 = values1 / np.sum(values1)
     values2 = values2 / np.sum(values2)
     
@@ -290,96 +288,33 @@ class IndividualEval(object):
         """
         print('get individual jsds here!')
         d1 = self.get_distances(t1)
-        # num1k, num2k, num3k, num4k, num5k, num6k = 0,0,0,0,0,0
-        # nummore = 0
-        # for dis in list(d1):
-        #     if dis<1000:
-        #         num1k += 1
-        #     elif dis<2000:
-        #         num2k += 1
-        #     elif dis<3000:
-        #         num3k += 1
-        #     elif dis<4000:
-        #         num4k += 1
-        #     elif dis<5000:
-        #         num5k += 1
-        #     elif dis<6000:
-        #         num6k += 1
-        #     else:
-        #         nummore += 1
-        # length = len(list(d1))
-        # print(num1k/length)  # 51  10 <1k
-        # print(num2k/length)  # 13  3  <2k
-        # print(num3k/length) 
-        # print(num4k/length)
-        # print(num5k/length)
-        # print(num6k/length)  # 12  2  <6k
-        # print(nummore/length) # 21  4  >6k
-        # sys.exit(0)
         d2 = self.get_distances(t2)
         d12 = np.array(list(d1)+list(d2))
         bins = int(3.5 * np.std(d12) / (len(d12) ** (1/3))) 
-        # bins = 20
         d1_dist, _ = EvalUtils.arr_to_distribution(
             d1, 0, self.max_distance, bins)
         d2_dist, _ = EvalUtils.arr_to_distribution(
             d2, 0, self.max_distance, bins) 
-        # drawTwoBars(d1_dist, d2_dist, "distance")
-        # sys.exit(0)
         d_jsd = EvalUtils.get_js_divergence(d1_dist, d2_dist)
-        # print(d_jsd)
-        # sys.exit(0)
-
         g1 = self.get_gradius(t1)
         g2 = self.get_gradius(t2)
         g12 = np.array(list(g1)+list(g2))
         bins = int(3.5 * np.std(g12) / (len(g12) ** (1/3)))  
-        # bins = 20
         g1_dist, _ = EvalUtils.arr_to_distribution(
             g1, 0, self.max_distance, bins)
         g2_dist, _ = EvalUtils.arr_to_distribution(
             g2, 0, self.max_distance, bins)
-        # drawTwoBars(g1_dist, g2_dist, "gradius")
-        # sys.exit(0)
         g_jsd = EvalUtils.get_js_divergence(g1_dist, g2_dist)
-        # print(g_jsd)
-        # sys.exit(0)
-        
-        
         du1 = self.get_durations(t1)
         du2 = self.get_durations(t2)          
         du1_dist, _ = EvalUtils.arr_to_distribution(du1, 0, 1, 48)
         du2_dist, _ = EvalUtils.arr_to_distribution(du2, 0, 1, 48)
-        du_jsd = EvalUtils.get_js_divergence(du1_dist, du2_dist)
-        # drawTwoBars(du1_dist, du2_dist, "durations")
-        # sys.exit(0)
-        
-        
+        du_jsd = EvalUtils.get_js_divergence(du1_dist, du2_dist)        
         p1 = self.get_periodicity(t1)
         p2 = self.get_periodicity(t2)
         p1_dist, _ = EvalUtils.arr_to_distribution(p1, 0, 1, 48)
         p2_dist, _ = EvalUtils.arr_to_distribution(p2, 0, 1, 48)
         p_jsd = EvalUtils.get_js_divergence(p1_dist, p2_dist)
-        # drawTwoBars(p1_dist, p2_dist, "periodicity")
-        # sys.exit(0)
-
-        
-        # l1 =  CollectiveEval.get_visits(t1,self.max_locs)
-        # l2 =  CollectiveEval.get_visits(t2, self.max_locs)
-        
-        # sys.exit(0)
-        # l1_dist, _= CollectiveEval.get_topk_visits(l1, 100)
-        # l2_dist, _ = CollectiveEval.get_topk_visits(l2, 100)
-        # l1_dist, _ = EvalUtils.arr_to_distribution(l1_dist,0,1,100)
-        # l2_dist, _ = EvalUtils.arr_to_distribution(l2_dist,0,1,100)
-        # l_jsd = EvalUtils.get_js_divergence(l1_dist, l2_dist)
-
-        # f1 = self.get_overall_topk_visits_freq(t1, 100)
-        # f2 = self.get_overall_topk_visits_freq(t2, 100)
-        # f1_dist, _ = EvalUtils.arr_to_distribution(f1,0,1,100)
-        # f2_dist, _ = EvalUtils.arr_to_distribution(f2,0,1,100)
-        # f_jsd = EvalUtils.get_js_divergence(f1_dist, f2_dist)
-
         return round(d_jsd, 5), round(g_jsd, 5), round(du_jsd, 5), round(p_jsd, 5)
         
         

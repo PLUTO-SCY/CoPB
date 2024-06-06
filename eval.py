@@ -379,7 +379,7 @@ class IndividualEval(object):
 
 
 parser = argparse.ArgumentParser(description='eval')
-parser.add_argument('--trajPath', default = "TrajectoryRes", type=str) # gpt-3.5-tu rbo-0125
+parser.add_argument('--trajPath', default = "TrajectoryRes", type=str)
 args = parser.parse_args()
 
 if __name__ == "__main__":    

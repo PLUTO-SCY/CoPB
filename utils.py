@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import openai
+from tqdm import tqdm
 
 
 def add_time(start_time, minutes):
@@ -315,5 +316,70 @@ def count_files(folder_path):
     for root, dirs, files in os.walk(folder_path):
         file_count += len(files)
     return file_count
+
+
+def processRealTraces(data, map):
+    traces = []
+    for key, value in data.items():
+        trace = []
+        for point in value:
+            try:
+                trace.append([(point[0], point[1]), point[3], map.lnglat2xy(point[4][0], point[4][1])])
+            except:
+                print(point)
+        
+        traces.append(trace)
+    return traces
+
+
+def timeInday(time):
+    try:
+        h,m = time.split(':')
+    except:
+        h,m,_ = time.split(':')
+    h = int(h)
+    m = int(m)   
+    minutes = h*60+m
+    return minutes/(24*60)
+
+def timeSplit(time):
+    time = time[1:-1]
+    start, end = time.split(',')
+    start = start.strip()
+    end = end.strip()
+    return (timeInday(start), timeInday(end))
+
+def genDataProcess(trace, map):
+    res = []
+    for item in trace:
+        poiid = item[2][1]
+        poi = map.get_poi(poiid)
+        xy = poi['position']
+        position = (xy['x'], xy['y'])
+        SEtime = timeSplit(item[1])
+        
+        res.append([SEtime, poiid, position])
+    return res
+
+def readGenTraces(map, folderName):
+    traces = []
+    filePath = 'Results/{}/Res0'.format(folderName)  # 是从中罗列文件名，那就不怕了.
+    allfiles = os.listdir(filePath)
+    
+    success = 0
+    for filename in tqdm(allfiles):
+        try:
+            f = open("Results/{}/Res0/".format(folderName) + filename, 'r', encoding='utf-8')
+            content = f.read()
+            oneTrace = json.loads(content)
+            trace = genDataProcess(oneTrace, map)
+            traces.append(trace)
+            success += 1
+        except:
+            pass
+        
+    print("read all num: {}".format(success))
+    print("actually all num: {}".format(len(allfiles)))
+    return traces
 
 

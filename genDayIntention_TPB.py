@@ -43,7 +43,7 @@ if __name__ == '__main__':
             N = getEventNum() 
             N = 3
             day = getDay()
-            globalInfo = getBasicData_0509(personBasicInfo, day, N, GPT_MODEL)
+            globalInfo = getGlobalPrompts(personBasicInfo, day, N, GPT_MODEL)
             history = []
             
             for i in range(N):  

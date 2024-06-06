@@ -101,10 +101,7 @@ Tenth:
     return systemInfo
 
 
-def getBasicData_0509(personBasicInfo, day, N, GPT_MODEL):
-    
-    # age, education, gender, consumption, occupation = personBasicInfo.split('-')
-    # ageDescription = "" if age == '0' else "Age: {}; ".format(age)
+def getGlobalPrompts(personBasicInfo, day, N, GPT_MODEL):
     education, gender, consumption, occupation = personBasicInfo.split('-')
     genderDescription = "" if gender == 'uncertain' else "Gender: {}; ".format(gender)
     educationDescription = "" if education == 'uncertain' else "Education: {}; ".format(education)

@@ -382,4 +382,3 @@ def readGenTraces(map, folderName):
     print("actually all num: {}".format(len(allfiles)))
     return traces
 
-

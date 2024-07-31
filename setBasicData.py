@@ -111,6 +111,9 @@ def getGlobalPrompts(personBasicInfo, day, N, GPT_MODEL):
     personDescription = """You are a person and your basic information is as follows:
 {}{}{}{}""".format(genderDescription, educationDescription, consumptionDescription, occupationDescription)
 
+    AutoAttitude = [{"role": "user", "content":"""What activities does a person with a character profile of {}{}{}{} tend to prefer and engage in?""".format(genderDescription, educationDescription, consumptionDescription, occupationDescription)}]
+    attitude = askChatGPT(AutoAttitude, model = GPT_MODEL, temperature = 1)  # ask LLM to generate the preferences
+
     AutoAnchor = [{"role": "system","content":
 """Most people in life have some fixed routines or habits that are generally non-negotiable and must be adhered to. For example, civil servants usually have fixed working hours (such as from 9 am to 5 pm), and engineers at technology companies usually go to work close to noon, and may not get off work until 10 p.m.. Some people insist on going to bed before 23:00, while some people are used to staying up late and getting up very late too.
 Now I give you a description of a person, and I hope you can generate 3 habits or tendencies that this person may have.
@@ -134,7 +137,10 @@ Please answer in the second person using an affirmative tone and organize your a
         {"role": "system","content":
 """{}
 
-You have some habits or tendencies as follows:
+Your preferences are as follows:
+{}
+
+You have some habits or routines as follows:
 {}
 
 Now I want you to generate your own schedule for today.(today is {}).
@@ -224,7 +230,7 @@ This is the schedule of a day for a high school teacher in Saturday.
 ]
 
 As shown in the example, a day's planning always starts with "go to sleep" and ends with "go to sleep" or "go home".
-""".format(personDescription, anchors, day, N)},
+""".format(personDescription, attitude, anchors, day, N)},
     ]
     
     return globalInfo
@@ -355,3 +361,4 @@ As shown in the example, a day's planning always starts with "go to sleep" and e
     ]
 
     return globalInfo
+

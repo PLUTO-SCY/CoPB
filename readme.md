@@ -55,4 +55,6 @@ The dataset for finetuning is in the path *'LLaMA_Finetune\Dataset'*.
 The finetuned params are in the path *'LLaMA_Finetune\0515_v5_intent&time_2_epoch'*. (There seems to be some problem with the display in the anonymous repository, but it is normal after downloading. There are 13 files in the folder.)
 You need to merge the params with initial LLaMA3-8B version following https://github.com/hiyouga/LLaMA-Factory/blob/main/examples/README.md
 
+The specific training parameters for LLaMA3-8B are in 'CoPB\LLaMA_Finetune\llama3_lora_sft.yaml'. You can use them directly after modifying the path.
+
 Thanks for the help from the great work [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory/tree/main).

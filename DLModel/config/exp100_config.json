@@ -1,0 +1,12 @@
+{
+    "modeldim": 256,
+    "epochs": 200001,
+    "expIndex": 100,
+    "diffusionstep": 100,
+    "denoise": "unet",
+    "dataset": "foursquare",
+    "train_batch_size": 500,
+    "train_lr": 8e-05,
+    "save_and_sample_every": 2000,
+    "testSample_batch": 4096
+}

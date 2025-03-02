@@ -8,10 +8,6 @@ import openai
 
 from modules import *
 from setBasicData import *
-from utils import *
-
-os.environ["http_proxy"] = "http://localhost:7890"
-os.environ["https_proxy"] = "http://localhost:7890"
 
 parser = argparse.ArgumentParser(description='gen DayIntention just Once')
 parser.add_argument('--genid', default = 1, type=int) 

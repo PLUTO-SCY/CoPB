@@ -61,7 +61,7 @@ python eval.py --trajPath TrajectoryRes
 
 
 ### :clipboard: Mobility Datasets: 
-We are making the Tencent and Chinamobile dataset we use open source [ link: https://pan.baidu.com/s/1wth1pbybpEG5dsHIj9kuQw?pwd=g6gp with password: g6gp ] to facilitate reproduction and further research.
+We are making the Tencent and Chinamobile dataset we use open source [ link: https://pan.baidu.com/s/1wth1pbybpEG5dsHIj9kuQw?pwd=g6gp with password: g6gp ] to facilitate reproduction and further research. For Foursquare dataset, you can acquire from  https://sites.google.com/site/yangdingqi/home/foursquare-dataset
 
 ### :sparkles: Finetuned Params of Lightweight LLaMA 3-8B:
 The dataset for finetuning is in the path *'LLaMA_Finetune\Dataset'*.

@@ -385,7 +385,6 @@ args = parser.parse_args()
 if __name__ == "__main__":    
     profileindex = 0
     genIndex = 0
-    
     map = Map(
             mongo_uri="mongodb://sim:FiblabSim1001@mgo.db.fiblab.tech:8635/",
             mongo_db="llmsim",
@@ -397,7 +396,6 @@ if __name__ == "__main__":
     real_data = pickle.load(file)
     real_data = processRealTraces(real_data, map)
     print(len(real_data))
-    
     path = args.trajPath
     gen_data = readGenTraces(map, path) 
     

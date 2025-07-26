@@ -591,11 +591,9 @@ def latlon_array_to_xy_vectorized(data):
 
 
 def process_sequences(seq1, seq2):
-    # 确保 seq2 是一个 NumPy 数组，便于处理
+
     seq2 = np.array(seq2)
-    
     for i in range(1, len(seq1)):
-        # 如果 seq1[i] == seq1[i-1]，则 seq2[i] 更新为 seq2[i-1]
         if seq1[i] == seq1[i-1]:
             seq2[i] = seq2[i-1]
     
@@ -632,10 +630,8 @@ if __name__ == "__main__":
     conditions = tensor.cpu().numpy()[-20000:]
     print('conditions.shape: ', conditions.shape)
 
-    # xy转换
     gen_data = latlon_array_to_xy_vectorized(gen_data)
 
-    # 条件修正
     for i in range(gen_data.shape[0]):
         gen_data[i] = process_sequences(conditions[i], gen_data[i])
 

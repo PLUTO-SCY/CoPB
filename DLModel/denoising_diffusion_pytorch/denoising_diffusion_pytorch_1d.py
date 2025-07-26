@@ -41,29 +41,17 @@ def default(val, d):
 def identity(t, *args, **kwargs):
     return t
 
-# def cycle(dl):
-#     while True:
-#         for data in dl:
-#             yield data
 
 def has_int_squareroot(num):
     return (math.sqrt(num) ** 2) == num
 
-# def num_to_groups(num, divisor):
-#     groups = num // divisor
-#     remainder = num % divisor
-#     arr = [divisor] * groups
-#     if remainder > 0:
-#         arr.append(remainder)
-#     return arr
 
 def num_to_groups(num_samples, batch_size):
-    # 计算需要多少个批次
-    num_batches = (num_samples + batch_size - 1) // batch_size  # 向上取整，保证最后一个批次也能包含剩余样本
+
+    num_batches = (num_samples + batch_size - 1) // batch_size  
     groups = []
 
     for batch_idx in range(num_batches):
-        # 计算每个批次的开始和结束索引
         start_idx = batch_idx * batch_size
         end_idx = min((batch_idx + 1) * batch_size, num_samples)
         groups.append(list(range(start_idx, end_idx)))
@@ -362,7 +350,6 @@ class Unet1D(Module):
         self.final_conv = nn.Conv1d(init_dim, self.out_dim, 1)
 
     def forward(self, x, time, emb, x_self_cond = None):
-        # 在现有的版本中其实是不需要emb的
         if self.self_condition:
             x_self_cond = default(x_self_cond, lambda: torch.zeros_like(x))
             x = torch.cat((x_self_cond, x), dim = 1)

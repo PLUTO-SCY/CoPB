@@ -28,7 +28,6 @@ from denoising_diffusion_pytorch.transformer_utils import *
 ModelPrediction =  namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
 
 
-# 不好用,不考虑
 class TransformerDenoisingAdd(nn.Module):
     '''
     Transformer-based denoising with query-based conditioning using only `emb` for conditioning.
@@ -62,7 +61,6 @@ class TransformerDenoisingAdd(nn.Module):
     
         self._embedding = nn.Linear(d_input, d_model)
 
-        # 定义 Embedding 层
         self.embCate_layer = nn.Embedding(num_embeddings=numCategory, embedding_dim=d_model)
 
         self._linear = nn.Linear(d_model, d_output)
@@ -109,7 +107,7 @@ class TransformerDenoisingAdd(nn.Module):
         
         seqLength = x.shape[2]
         # x.shape:  [4, 2, 144] <- [batchsize, channel, length]
-        xEmb = self._embedding(x.permute(0, 2, 1))  # xEmb.shape [4, 144, 256] <- [4, 144, 2] 所以其实是把channel的2变成了256
+        xEmb = self._embedding(x.permute(0, 2, 1))  # xEmb.shape [4, 144, 256] <- [4, 144, 2] 
 
         cateEmbedding = self.embCate_layer(emb)  # [4, 144, 256]
 
@@ -129,21 +127,14 @@ class TransformerDenoisingAdd(nn.Module):
             positional_encoding = positional_encoding.to(encoding.device)  # Torch.Size([8, 64])
             encoding.add_(positional_encoding)  # Add positional encoding
 
-        # Encoder stack
         for layer in self.layers_encoding:
-            encoding = encoding + cateEmbedding  # 简单地将两个变量相加.
-            encoding = layer(encoding)  # Pass through transformer layer
+            encoding = encoding + cateEmbedding 
+            encoding = layer(encoding)  
 
-        output = self._linear(encoding)  # Final output projection
-
-        # print('output.shape', output.shape)
-        # print('here ok')
-        # # 现在已经基本ok没啥问题了
-        # sys.exit(0)
+        output = self._linear(encoding) 
 
         return output.permute(0, 2, 1)  # Return with original shape [batch_size, seq_len, d_output]
 
-# query 只加一次condition
 class TransformerDenoisingQueryOnce(nn.Module):
     '''
     use x as key to query the condition embedding
@@ -177,7 +168,6 @@ class TransformerDenoisingQueryOnce(nn.Module):
     
         self._embedding = nn.Linear(d_input, d_model)
 
-        # 定义 Embedding 层
         self.embCate_layer = nn.Embedding(num_embeddings=numCategory, embedding_dim=d_model)
 
         self._linear = nn.Linear(d_model, d_output)
@@ -247,16 +237,15 @@ class TransformerDenoisingQueryOnce(nn.Module):
         encoding = encoding + step_emb  # Add step embedding to input
 
         
-        # 不是直接相加,而是要计算一个相关分数
         xQuery = self.forQueryFunc(xEmb)  # xQuery torch.Size([4, 144, 256])
         try:    
-            score = torch.bmm(xQuery, cateEmbedding.transpose(1, 2))  # [4, 144, 256] * [4, 256, 144] -> [4, 144, 144]  # 计算了一个相关分数
+            score = torch.bmm(xQuery, cateEmbedding.transpose(1, 2))  # [4, 144, 256] * [4, 256, 144] -> [4, 144, 144] 
         except:
             print('cateEmbedding.shape: ', cateEmbedding.shape)
             print('emb.shape: ', emb.shape)
             sys.exit(0)        
-        score = F.softmax(score, dim=2)  # 在最后一个维度上应用softmax,其实就是value值归一化.
-        condition = torch.bmm(score, cateEmbedding)  # [4, 144, 144] * [4, 144, 256] -> [4, 144, 256] 维度不变,经过加权
+        score = F.softmax(score, dim=2) 
+        condition = torch.bmm(score, cateEmbedding)  # [4, 144, 144] * [4, 144, 256] -> [4, 144, 256] 
 
         # Add positional encoding if needed
         if self._generate_PE is not None:
@@ -309,7 +298,6 @@ class TransformerDenoisingQueryMulti(nn.Module):
     
         self._embedding = nn.Linear(d_input, d_model)
 
-        # 定义 Embedding 层
         self.embCate_layer = nn.Embedding(num_embeddings=numCategory, embedding_dim=d_model)
 
         self._linear = nn.Linear(d_model, d_output)
@@ -362,7 +350,7 @@ class TransformerDenoisingQueryMulti(nn.Module):
         
         seqLength = x.shape[2]
         # x.shape:  [4, 2, 144] <- [batchsize, channel, length]
-        xEmb = self._embedding(x.permute(0, 2, 1))  # xEmb.shape [4, 144, 256] <- [4, 144, 2] 所以其实是把channel的2变成了256
+        xEmb = self._embedding(x.permute(0, 2, 1))  
 
         cateEmbedding = self.embCate_layer(emb)  # [4, 144, 256]  # 还是先独立进行embedding
 
@@ -379,13 +367,13 @@ class TransformerDenoisingQueryMulti(nn.Module):
         # 不是直接相加,而是要计算一个相关分数
         xQuery = self.forQueryFunc(xEmb)  # xQuery torch.Size([4, 144, 256])
         try:    
-            score = torch.bmm(xQuery, cateEmbedding.transpose(1, 2))  # [4, 144, 256] * [4, 256, 144] -> [4, 144, 144]  # 计算了一个相关分数
+            score = torch.bmm(xQuery, cateEmbedding.transpose(1, 2))  # [4, 144, 256] * [4, 256, 144] -> [4, 144, 144]  
         except:
             print('cateEmbedding.shape: ', cateEmbedding.shape)
             print('emb.shape: ', emb.shape)
             sys.exit(0)        
-        score = F.softmax(score, dim=2)  # 在最后一个维度上应用softmax,其实就是value值归一化.
-        condition = torch.bmm(score, cateEmbedding)  # [4, 144, 144] * [4, 144, 256] -> [4, 144, 256] 维度不变,经过加权
+        score = F.softmax(score, dim=2)  
+        condition = torch.bmm(score, cateEmbedding) 
 
         # Add positional encoding if needed
         if self._generate_PE is not None:

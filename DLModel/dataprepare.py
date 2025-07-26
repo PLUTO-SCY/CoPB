@@ -11,12 +11,12 @@ import pickle
 import copy
 import json
 
-# 读取已处理的数据
+# Read the processed data
 def load_trajectories(file_path):
     with open(file_path, "rb") as f:
         return pickle.load(f)
 
-# 类别编码和经纬度归一化
+# Category encoding and latitude-longitude normalization
 def initialize_encoders(user_trajectories):
     category_list = sorted(set(
         category for trajectories in user_trajectories.values() 
@@ -25,28 +25,25 @@ def initialize_encoders(user_trajectories):
 
     category_encoder = LabelEncoder()
     category_encoder.fit(category_list)
-    # 查看每个标签对应的类别
     category_to_label = dict(zip(category_encoder.classes_, category_encoder.transform(category_encoder.classes_)))
     numCategory = len(category_encoder.classes_)
     
     return category_encoder, numCategory
 
-# 类别编码和经纬度归一化
 def initialize_encoders_tencent(user_trajectories):
 
-    # 汇总所有唯一的category，并去重后排序
+
     category_list = sorted(set(category for df in user_trajectories for category in df["General Category"].unique()))
 
     category_encoder = LabelEncoder()
-    category_encoder.fit(category_list)
-    # 查看每个标签对应的类别
+    category_encoder.fit(category_list)=
     category_to_label = dict(zip(category_encoder.classes_, category_encoder.transform(category_encoder.classes_)))
     # print('category_to_label: ', category_to_label)
     numCategory = len(category_encoder.classes_)
     
     return category_encoder, numCategory 
 
-# 数据插值处理
+# Data interpolation processing
 def interpolate_trajectory(df):
     df["Local time"] = pd.to_datetime(df["Local time"])
     df["Local time"] = df["Local time"].dt.tz_localize(None)  # 去掉时区信息

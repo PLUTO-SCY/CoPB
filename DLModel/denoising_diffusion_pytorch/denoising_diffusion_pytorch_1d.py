@@ -5,7 +5,6 @@ from functools import partial
 from collections import namedtuple
 from multiprocessing import cpu_count
 from itertools import cycle
-
 import torch
 from torch import nn, einsum, Tensor
 from torch.nn import Module, ModuleList
@@ -13,22 +12,16 @@ import torch.nn.functional as F
 from torch.amp import autocast
 from torch.optim import Adam
 from torch.utils.data import Dataset, DataLoader
-
 from einops import rearrange, reduce
 from einops.layers.torch import Rearrange
 import sys
 from accelerate import Accelerator
 from ema_pytorch import EMA
-
 from tqdm.auto import tqdm
-
 from denoising_diffusion_pytorch.version import __version__
-
-# constants
 
 ModelPrediction =  namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
 
-# helpers functions
 
 def exists(x):
     return x is not None
@@ -140,9 +133,6 @@ class SinusoidalPosEmb(Module):
         return emb
 
 class RandomOrLearnedSinusoidalPosEmb(Module):
-    """ following @crowsonkb 's lead with random (learned optional) sinusoidal pos emb """
-    """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
-
     def __init__(self, dim, is_random = False):
         super().__init__()
         assert (dim % 2) == 0
@@ -391,7 +381,7 @@ class Unet1D(Module):
         return self.final_conv(x)
     
     
-class Unet1D_condition(Module):  # 其实是属于比较轻量级的修改方式
+class Unet1D_condition(Module):  
     def __init__(
         self,
         dim,
@@ -743,11 +733,8 @@ class GaussianDiffusion1D(Module):
     @torch.no_grad()
     def p_sample_loop(self, shape, intent):
         batch, device = shape[0], self.betas.device
-
-        img = torch.randn(shape, device=device)  # 这里其实已经考虑了batchsize了
-
+        img = torch.randn(shape, device=device) 
         x_start = None
-
         for t in tqdm(reversed(range(0, self.num_timesteps)), desc = 'sampling loop time step', total = self.num_timesteps):
             self_cond = x_start if self.self_condition else None
             img, x_start = self.p_sample(img, t, intent, self_cond)
@@ -787,7 +774,6 @@ class GaussianDiffusion1D(Module):
             img = x_start * alpha_next.sqrt() + \
                   c * pred_noise + \
                   sigma * noise
-
         img = self.unnormalize(img)
         return img
 
@@ -801,14 +787,10 @@ class GaussianDiffusion1D(Module):
     def interpolate(self, x1, x2, t = None, lam = 0.5):
         b, *_, device = *x1.shape, x1.device
         t = default(t, self.num_timesteps - 1)
-
         assert x1.shape == x2.shape
-
         t_batched = torch.full((b,), t, device = device)
         xt1, xt2 = map(lambda x: self.q_sample(x, t = t_batched), (x1, x2))
-
         img = (1 - lam) * xt1 + lam * xt2
-
         x_start = None
 
         for i in tqdm(reversed(range(0, t)), desc = 'interpolation sample time step', total = t):
@@ -820,7 +802,6 @@ class GaussianDiffusion1D(Module):
     @autocast('cuda', enabled = False)
     def q_sample(self, x_start, t, noise=None):
         noise = default(noise, lambda: torch.randn_like(x_start))
-
         return (
             extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start +
             extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape) * noise
@@ -829,25 +810,13 @@ class GaussianDiffusion1D(Module):
     def p_losses(self, x_start, t, intent, noise = None):
         b, c, n = x_start.shape
         noise = default(noise, lambda: torch.randn_like(x_start))
-
-        # noise sample
-
         x = self.q_sample(x_start = x_start, t = t, noise = noise)
-
-        # if doing self-conditioning, 50% of the time, predict x_start from current set of times
-        # and condition with unet with that
-        # this technique will slow down training by 25%, but seems to lower FID significantly
-
         x_self_cond = None
         if self.self_condition and random() < 0.5:
             with torch.no_grad():
                 x_self_cond = self.model_predictions(x, t, intent).pred_x_start
                 x_self_cond.detach_()
-
-        # predict and take gradient step
-
         model_out = self.model(x, t, intent, x_self_cond)
-
         if self.objective == 'pred_noise':
             target = noise
         elif self.objective == 'pred_x0':
@@ -857,22 +826,17 @@ class GaussianDiffusion1D(Module):
             target = v
         else:
             raise ValueError(f'unknown objective {self.objective}')
-
         loss = F.mse_loss(model_out, target, reduction = 'none')
         loss = reduce(loss, 'b ... -> b', 'mean')
-
         loss = loss * extract(self.loss_weight, t, loss.shape)
         return loss.mean()
 
     def forward(self, traj, intent, *args, **kwargs):
         b, c, n, device, seq_length, = *traj.shape, traj.device, self.seq_length
-
         assert n == seq_length, f'seq length {n} must be {seq_length}'
         t = torch.randint(0, self.num_timesteps, (b,), device=device).long()
         traj = self.normalize(traj)  
         return self.p_losses(traj, t, intent, *args, **kwargs)  
-
-# trainer class
 
 class Trainer1D(object):
     def __init__(
@@ -901,44 +865,24 @@ class Trainer1D(object):
     ):
         super().__init__()
 
-        # accelerator
-
         self.accelerator = Accelerator(
             split_batches = split_batches,
             mixed_precision = mixed_precision_type if amp else 'no'
         )
-
-        # model
-
         self.model = diffusion_model
         self.channels = diffusion_model.channels
-
-        # sampling and training hyperparameters
-
         assert has_int_squareroot(num_samples), 'number of samples must have an integer square root'
         self.num_samples = num_samples
         self.save_and_sample_every = save_and_sample_every
-
         self.batch_size = train_batch_size
         self.gradient_accumulate_every = gradient_accumulate_every
         self.max_grad_norm = max_grad_norm
-
         self.train_num_steps = train_num_steps
-
-        # dataset and dataloader
-
         dl = DataLoader(dataset, batch_size = train_batch_size, shuffle = True, pin_memory = True, num_workers = cpu_count(), drop_last=True)
 
         dl = self.accelerator.prepare(dl)
         self.dl = cycle(dl)
-        # self.dl = iter(dl)
-
-        # optimizer
-
         self.opt = Adam(diffusion_model.parameters(), lr = train_lr, betas = adam_betas)
-
-        # for logging results in a folder periodically
-
         if self.accelerator.is_main_process:
             self.ema = EMA(diffusion_model, beta = ema_decay, update_every = ema_update_every)
             self.ema.to(self.device)
@@ -946,19 +890,10 @@ class Trainer1D(object):
         self.results_folder = Path(results_folder)
         self.results_folder = self.results_folder / str(expIndex)
         self.results_folder.mkdir(exist_ok = True)
-
-        # step counter state
-
         self.step = 0
-
-        # prepare model, dataloader, optimizer with accelerator
-
         self.model, self.opt = self.accelerator.prepare(self.model, self.opt)
-
         self.writer = tbwriter 
-        
         self.evalCondition = evalCondition
-
         self.testSample_batch = testSample_batch
 
     @property
@@ -968,7 +903,6 @@ class Trainer1D(object):
     def save(self, milestone):
         if not self.accelerator.is_local_main_process:
             return
-
         data = {
             'step': self.step,
             'model': self.accelerator.get_state_dict(self.model),
@@ -977,15 +911,12 @@ class Trainer1D(object):
             'scaler': self.accelerator.scaler.state_dict() if exists(self.accelerator.scaler) else None,
             'version': __version__
         }
-
         torch.save(data, str(self.results_folder / f'model-{milestone}.pt'))
 
     def load(self, milestone):
         accelerator = self.accelerator
         device = accelerator.device
-
         data = torch.load(str(self.results_folder / f'model-{milestone}.pt'), map_location=device, weights_only=True)
-
         model = self.accelerator.unwrap_model(self.model)
         model.load_state_dict(data['model'])
 
@@ -993,10 +924,8 @@ class Trainer1D(object):
         self.opt.load_state_dict(data['opt'])
         if self.accelerator.is_main_process:
             self.ema.load_state_dict(data["ema"])
-
         if 'version' in data:
             print(f"loading from version {data['version']}")
-
         if exists(self.accelerator.scaler) and exists(data['scaler']):
             self.accelerator.scaler.load_state_dict(data['scaler'])
 
@@ -1005,76 +934,49 @@ class Trainer1D(object):
         device = accelerator.device
 
         with tqdm(initial = self.step, total = self.train_num_steps, disable = not accelerator.is_main_process) as pbar:
-
             while self.step < self.train_num_steps:
                 self.model.train()
-
-                total_loss = 0.
-
+                total_loss = 0.0
                 for _ in range(self.gradient_accumulate_every):
                     data = next(self.dl)  
                     traj = data[0].to(device) 
                     intent = data[1].to(device)
-                    
-
                     with self.accelerator.autocast():
                         loss = self.model(traj, intent)
                         loss = loss / self.gradient_accumulate_every
                         total_loss += loss.item()
-
                     self.accelerator.backward(loss)
 
                 pbar.set_description(f'loss: {total_loss:.4f}')
-                
                 self.writer.add_scalar('Diffusion Loss', total_loss, self.step)
-
                 accelerator.wait_for_everyone()
                 accelerator.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
 
                 self.opt.step()
                 self.opt.zero_grad()
-
                 accelerator.wait_for_everyone()
 
                 self.step += 1
                 if accelerator.is_main_process:
                     self.ema.update()
-
                     if self.step != 0 and self.step % self.save_and_sample_every == 0:
-                        self.ema.ema_model.eval()  # 在这里开始eval评估sample出来的质量
+                        self.ema.ema_model.eval()  
 
                         with torch.no_grad():
                             milestone = self.step // self.save_and_sample_every
-
-                            # 获取 evalCondition 的后 30% 作为条件
-                            condition_start_idx = -20000  # 计算后 30% 的起始索引
-                            condition = self.evalCondition[condition_start_idx:]  # 获取后 30% 的条件
-                            
-                            # 更新 num_samples 为后 30% 条件的数量
+                            condition_start_idx = -20000 
+                            condition = self.evalCondition[condition_start_idx:] 
                             self.num_samples = condition.shape[0]
-
-                            # 根据新的 num_samples 计算 batches
-                            batches = num_to_groups(self.num_samples, self.testSample_batch)  # 根据新的 num_samples 和 batch_size 来分批
-
+                            batches = num_to_groups(self.num_samples, self.testSample_batch) 
                             all_samples_list = []
-                            # all_categories_list = []
                             for batch_idx in batches:
-                                # 获取当前批次对应的条件（基于后30%的evalCondition）
-                                batch_conditions = condition[batch_idx]  # 获取当前批次对应的条件
-                                
-                                # 使用条件进行采样
+                                batch_conditions = condition[batch_idx] 
                                 samples = self.ema.ema_model.sample(batch_conditions, batch_conditions.shape[0])
                                 all_samples_list.append(samples)
-                                # all_categories_list.append(batch_conditions)
 
-                            # 将所有样本拼接起来
                             all_samples = torch.cat(all_samples_list, dim=0)
-                            # all_categories = torch.cat(all_categories_list, dim=0)
-
                             torch.save(all_samples, str(self.results_folder / f'sample-{milestone}.pt'))
-                            # torch.save(all_categories, str(self.results_folder / f'condition-{milestone}.pt'))
                             self.save(milestone)
-                            # sys.exit(0)
 
                 pbar.update(1)
 

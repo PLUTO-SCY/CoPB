@@ -33,8 +33,6 @@ def timeSplit(time):
 
 
 def genDataProcess(trace, map):
-    # 轨迹的格式是: [['go to sleep', '(00:00, 09:00)', ['慧忠里小区312号楼', 700764862]],
-    # 现在将其处理为：[开始时间点，结束时间点，POIid(字符串), (以米为单位的x,y坐标，通过模拟器的API可以方便地实现)]
     res = []
     for item in trace:
         poiid = item[2]
@@ -54,12 +52,11 @@ def readOneGenTrace(profileindex, genIndex, map):
     oneTrace = json.loads(content)
     # print(oneTrace)
 
-    # 需要的信息：始末时间, POI_id, POI的x,y坐标
     trace = genDataProcess(oneTrace, map)
     return trace
 
 
-def readGenTraces(expIndex, sampleIndex):  # 读取多条轨迹
+def readGenTraces(expIndex, sampleIndex): 
 
     file_path = f'../results/{expIndex}/sample-{sampleIndex}.pt'
     tensor = torch.load(file_path)
@@ -67,9 +64,8 @@ def readGenTraces(expIndex, sampleIndex):  # 读取多条轨迹
     return numpy_array
 
 
-def readGenTraces2(map, folderName):  # 读取多条轨迹
+def readGenTraces2(map, folderName):  
     traces = []
-    # 是从中罗列文件名，那就不怕了.
     filePath = '/data1/shaochenyang/LLMBehav/GenTrace/Results/Trajectory_BestRes_Search/{}'.format(
         folderName)
     allfiles = os.listdir(filePath)
@@ -82,7 +78,6 @@ def readGenTraces2(map, folderName):  # 读取多条轨迹
             content = f.read()
             oneTrace = json.loads(content)
 
-            # 需要的信息：始末时间, POI_id, POI的x,y坐标
             trace = genDataProcess(oneTrace, map)
             traces.append(trace)
             success += 1
@@ -96,7 +91,6 @@ def readGenTraces2(map, folderName):  # 读取多条轨迹
 
 
 def processRealTraces(data, map):
-    # 这就是真是数据
     traces = []
     for key, value in data.items():
         trace = []

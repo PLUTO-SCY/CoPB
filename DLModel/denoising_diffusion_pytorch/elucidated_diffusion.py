@@ -3,7 +3,6 @@ from random import random
 import torch
 from torch import nn, einsum
 import torch.nn.functional as F
-
 from tqdm import tqdm
 from einops import rearrange, repeat, reduce
 
@@ -201,13 +200,8 @@ class ElucidatedDiffusion(nn.Module):
 
     @torch.no_grad()
     def sample_using_dpmpp(self, batch_size = 16, num_sample_steps = None):
-        """
-        thanks to Katherine Crowson (https://github.com/crowsonkb) for figuring it all out!
-        https://arxiv.org/abs/2211.01095
-        """
 
         device, num_sample_steps = self.device, default(num_sample_steps, self.num_sample_steps)
-
         sigmas = self.sample_schedule(num_sample_steps)
 
         shape = (batch_size, self.channels, self.image_size, self.image_size)

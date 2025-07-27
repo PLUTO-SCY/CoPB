@@ -223,9 +223,9 @@ class TransformerDenoisingQueryOnce(nn.Module):
 
         seqLength = x.shape[2]
         # x.shape:  [4, 2, 144] <- [batchsize, channel, length]
-        xEmb = self._embedding(x.permute(0, 2, 1))  # xEmb.shape [4, 144, 256] <- [4, 144, 2] 所以其实是把channel的2变成了256
+        xEmb = self._embedding(x.permute(0, 2, 1)) 
 
-        cateEmbedding = self.embCate_layer(emb)  # [4, 144, 256]  # 还是先独立进行embedding
+        cateEmbedding = self.embCate_layer(emb)  # [4, 144, 256]
 
         # Step embeddings
         step = self.step_mlp(t)
@@ -352,7 +352,7 @@ class TransformerDenoisingQueryMulti(nn.Module):
         # x.shape:  [4, 2, 144] <- [batchsize, channel, length]
         xEmb = self._embedding(x.permute(0, 2, 1))  
 
-        cateEmbedding = self.embCate_layer(emb)  # [4, 144, 256]  # 还是先独立进行embedding
+        cateEmbedding = self.embCate_layer(emb)
 
         # Step embeddings
         step = self.step_mlp(t)
@@ -363,8 +363,6 @@ class TransformerDenoisingQueryMulti(nn.Module):
         encoding = xEmb
         encoding = encoding + step_emb  # Add step embedding to input
 
-        
-        # 不是直接相加,而是要计算一个相关分数
         xQuery = self.forQueryFunc(xEmb)  # xQuery torch.Size([4, 144, 256])
         try:    
             score = torch.bmm(xQuery, cateEmbedding.transpose(1, 2))  # [4, 144, 256] * [4, 256, 144] -> [4, 144, 144]  

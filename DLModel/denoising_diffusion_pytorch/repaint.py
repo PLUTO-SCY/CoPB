@@ -19,16 +19,13 @@ from torchvision import transforms as T, utils
 
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
-
 from PIL import Image
 from tqdm.auto import tqdm
 from ema_pytorch import EMA
-
 from accelerate import Accelerator
 
 from denoising_diffusion_pytorch.attend import Attend
 from denoising_diffusion_pytorch.fid_evaluation import FIDEvaluation
-
 from denoising_diffusion_pytorch.version import __version__
 
 # constants
@@ -126,9 +123,6 @@ class SinusoidalPosEmb(Module):
         return emb
 
 class RandomOrLearnedSinusoidalPosEmb(Module):
-    """ following @crowsonkb 's lead with random (learned optional) sinusoidal pos emb """
-    """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
-
     def __init__(self, dim, is_random = False):
         super().__init__()
         assert divisible_by(dim, 2)

@@ -1,18 +1,12 @@
 from functools import wraps
 from packaging import version
 from collections import namedtuple
-
 import torch
 from torch import nn, einsum
 import torch.nn.functional as F
-
 from einops import rearrange
 
-# constants
-
 AttentionConfig = namedtuple('AttentionConfig', ['enable_flash', 'enable_math', 'enable_mem_efficient'])
-
-# helpers
 
 def exists(val):
     return val is not None
@@ -32,8 +26,6 @@ def once(fn):
     return inner
 
 print_once = once(print)
-
-# main class
 
 class Attend(nn.Module):
     def __init__(
@@ -78,18 +70,12 @@ class Attend(nn.Module):
 
         q, k, v = map(lambda t: t.contiguous(), (q, k, v))
 
-        # Check if there is a compatible device for flash attention
-
         config = self.cuda_config if is_cuda else self.cpu_config
-
-        # pytorch 2.0 flash attn: q, k, v, mask, dropout, causal, softmax_scale
-
         with torch.backends.cuda.sdp_kernel(**config._asdict()):
             out = F.scaled_dot_product_attention(
                 q, k, v,
                 dropout_p = self.dropout if self.training else 0.
             )
-
         return out
 
     def forward(self, q, k, v):
@@ -102,23 +88,12 @@ class Attend(nn.Module):
         """
 
         q_len, k_len, device = q.shape[-2], k.shape[-2], q.device
-
         if self.flash:
             return self.flash_attn(q, k, v)
-
         scale = default(self.scale, q.shape[-1] ** -0.5)
-
-        # similarity
-
         sim = einsum(f"b h i d, b h j d -> b h i j", q, k) * scale
-
-        # attention
-
         attn = sim.softmax(dim = -1)
         attn = self.attn_dropout(attn)
-
-        # aggregate values
-
         out = einsum(f"b h i j, b h j d -> b h i d", attn, v)
 
         return out

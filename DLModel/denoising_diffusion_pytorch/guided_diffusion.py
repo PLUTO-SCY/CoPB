@@ -5,32 +5,22 @@ from random import random
 from functools import partial
 from collections import namedtuple
 from multiprocessing import cpu_count
-
 import torch
 from torch import nn, einsum
 import torch.nn.functional as F
 from torch.amp import autocast
 from torch.utils.data import Dataset, DataLoader
-
 from torch.optim import Adam
 from torchvision import transforms as T, utils
-
 from einops import rearrange, reduce
 from einops.layers.torch import Rearrange
-
 from PIL import Image
 from tqdm.auto import tqdm
 from ema_pytorch import EMA
-
 from accelerate import Accelerator
-
-# from denoising_diffusion_pytorch.version import __version__
-
-# constants
 
 ModelPrediction =  namedtuple('ModelPrediction', ['pred_noise', 'pred_x_start'])
 
-# helpers functions
 
 def exists(x):
     return x is not None
@@ -129,8 +119,6 @@ class SinusoidalPosEmb(nn.Module):
         return emb
 
 class RandomOrLearnedSinusoidalPosEmb(nn.Module):
-    """ following @crowsonkb 's lead with random (learned optional) sinusoidal pos emb """
-    """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
 
     def __init__(self, dim, is_random = False):
         super().__init__()
@@ -598,9 +586,6 @@ class GaussianDiffusion(nn.Module):
         condition on y.
         This uses the conditioning strategy from Sohl-Dickstein et al. (2015).
         """
-        # this fixes a bug in the official OpenAI implementation:
-        # https://github.com/openai/guided-diffusion/issues/51 (see point 1)
-        # use the predicted mean for the previous timestep to compute gradient
         gradient = cond_fn(mean, t, **guidance_kwargs)
         new_mean = (
             mean.float() + variance * gradient.float()

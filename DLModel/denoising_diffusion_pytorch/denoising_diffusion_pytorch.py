@@ -127,8 +127,6 @@ class SinusoidalPosEmb(Module):
         return emb
 
 class RandomOrLearnedSinusoidalPosEmb(Module):
-    """ following @crowsonkb 's lead with random (learned optional) sinusoidal pos emb """
-    """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
 
     def __init__(self, dim, is_random = False):
         super().__init__()

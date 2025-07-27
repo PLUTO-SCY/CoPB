@@ -1,7 +1,5 @@
 import pickle
-
 import numpy
-
 from utils import *
 
 

@@ -54,13 +54,6 @@ class MonotonicLinear(nn.Module):
     def forward(self, x):
         return F.linear(x, self.net.weight.abs(), self.net.bias.abs())
 
-# continuous schedules
-
-# equations are taken from https://openreview.net/attachment?id=2LdBqxc1Yv&name=supplementary_material
-# @crowsonkb Katherine's repository also helped here https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/utils.py
-
-# log(snr) that approximates the original linear schedule
-
 def log(t, eps = 1e-20):
     return torch.log(t.clamp(min = eps))
 

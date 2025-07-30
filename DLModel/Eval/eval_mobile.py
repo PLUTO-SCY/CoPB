@@ -466,14 +466,14 @@ if __name__ == "__main__":
     sampleIndex = 9
     gen_data = readGenTraces(expIndex, sampleIndex)
 
-    with open('../data/mobile_scaler.pkl', 'rb') as f:
+    with open('../EvalData/mobile_scaler.pkl', 'rb') as f:
         loaded_scaler = pickle.load(f)
     gen_data = gen_data.reshape(-1, 2) 
     gen_data = loaded_scaler.inverse_transform(gen_data)
     gen_data = gen_data.reshape(-1, 144, 2)  # (7920, 144, 2)
     print('gen_data.shape: ', gen_data.shape) 
 
-    path = '/data2/shaochenyang/scywork/Mobility_Revision/DLModel/data/mobile_condition.pt'
+    path = '../EvalData/mobile_condition.pt'
     tensor = torch.load(path)
     conditions = tensor.cpu().numpy()[-20000:]
     print('conditions.shape: ', conditions.shape)
@@ -483,7 +483,7 @@ if __name__ == "__main__":
         gen_data[i] = process_sequences(conditions[i], gen_data[i])
 
 
-    with open('/data2/shaochenyang/scywork/Mobility_Revision/Datasets/mobile/chinamobile_cate_trajs_144.pkl', "rb") as f:
+    with open('../EvalData/chinamobile_cate_trajs_144.pkl', "rb") as f:
         processed_trajectories = pickle.load(f)
     longlats = []
     processed_trajectories = random.sample(processed_trajectories, 20000)
@@ -491,10 +491,10 @@ if __name__ == "__main__":
         lat_lon = df[["Latitude", "Longitude"]].values
         longlats.append(lat_lon)
     longlats = np.array(longlats)
-    np.save('../data/mobile_realTrajs.npy', longlats)
+    np.save('../EvalData/mobile_realTrajs.npy', longlats)
 
 
-    real_data = np.load('../data/mobile_realTrajs.npy')
+    real_data = np.load('../EvalData/mobile_realTrajs.npy')
     real_data = latlon_array_to_xy_vectorized(real_data)
     print('real trajectories.shape: ', real_data.shape)
 

@@ -312,15 +312,6 @@ class IndividualEval(object):
             f.append(frequency)
         return reps
 
-    def get_timewise_periodicity(self, trajs):
-        """
-        stat how many repetitions of different times
-        :param trajs:
-        :return:
-        """
-        pass
-
-
     def get_geogradius(self, trajs):
         """
         get the std of the distances of all points away from center as `gyration radius`
@@ -342,8 +333,6 @@ class IndividualEval(object):
             gradius.append(rad)
         gradius = np.array(gradius, dtype=float)
         return gradius
-    
-    
 
     def get_gridsFreq(self, trajs):
         ids = [point for traj in trajs for point in traj]
@@ -377,7 +366,6 @@ class IndividualEval(object):
         g_jsd = EvalUtils.get_js_divergence(g1_dist, g2_dist)
         print('get_gradius done!')
         
-        
         du1 = self.get_durations(t1)
         du2 = self.get_durations(t2)          
         du1_dist, _ = EvalUtils.arr_to_distribution(du1, 0, 1, 144)
@@ -408,9 +396,7 @@ class IndividualEval(object):
         z1 = self.get_gridsFreq(t1) 
         z2 = self.get_gridsFreq(t2)
         z_jsd = EvalUtils.get_js_divergence(z1, z2)
-
         print(d_jsd,  g_jsd,  du_jsd,  p_jsd,  e_jsd,  f_jsd, z_jsd)
-
         return d_jsd,  g_jsd,  du_jsd,  p_jsd,  e_jsd,  f_jsd, z_jsd
         
   
@@ -459,17 +445,15 @@ if __name__ == "__main__":
     print(np.mean(gen_data)) 
     print(np.mean(gen_data[:,:,1]))  
 
-    with open('../data/foursquare_scaler.pkl', 'rb') as f:
+    with open('../EvalData/foursquare_scaler.pkl', 'rb') as f:
         loaded_scaler = pickle.load(f)
 
     gen_data = gen_data.reshape(-1, 2)
-
     gen_data = loaded_scaler.inverse_transform(gen_data)
-
     gen_data = gen_data.reshape(-1, 144, 2) 
     print('gen_data.shape: ', gen_data.shape)  
 
-    path = '/data2/shaochenyang/scywork/Mobility_Revision/DLModel/data/foursquare_condition.pt'
+    path = '../EvalData/foursquare_condition.pt'
     tensor = torch.load(path)
     conditions = tensor.cpu().numpy()
     print('conditions.shape: ', conditions.shape)
@@ -478,7 +462,7 @@ if __name__ == "__main__":
 
     for i in range(gen_data.shape[0]):
         gen_data[i] = process_sequences(conditions[i], gen_data[i])
-    real_data = np.load('../data/foursquare_realTrajs.npy')
+    real_data = np.load('../EvalData/foursquare_realTrajs.npy')
 
     real_data = latlon_array_to_xy_vectorized(real_data)
     print('real trajectories.shape: ', real_data.shape)

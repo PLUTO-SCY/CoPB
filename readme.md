@@ -121,6 +121,11 @@ Each run will produce generated trajectory data in the corresponding output dire
 
 **Evaluate Diffusion-generated Trajectories**
 
+First download the test set from the link: https://pan.baidu.com/s/1p7-LTDu4U5WSaU3BG57c9g?pwd=uvmy with password: uvmy 
+
+After extracting, place the EvalData folder at the following path: CoPB/DLModel/EvalData
+
+
 ```bash
 cd DLModel/Eval
 

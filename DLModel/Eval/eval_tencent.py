@@ -438,16 +438,12 @@ class IndividualEval(object):
         z2 = self.get_gridsFreq(t2)
         z_jsd = EvalUtils.get_js_divergence(z1, z2)
         print('get_gridsFreq done!')
-        
         print(d_jsd,  g_jsd,  du_jsd,  p_jsd,  e_jsd,  f_jsd, z_jsd)
-
         return d_jsd,  g_jsd,  du_jsd,  p_jsd,  e_jsd,  f_jsd, z_jsd
 
 
 lat0 = 39.94222187  
 lon0 = 116.37886747  
-
-
 R = 6371000 
 
 def deg_to_rad(deg):
@@ -469,13 +465,10 @@ def latlon_to_xy(lat, lon):
 def latlon_array_to_xy_vectorized(data):
     lat0_rad = deg_to_rad(lat0)
     lon0_rad = deg_to_rad(lon0)
-
     lats_rad = deg_to_rad(data[:, :, 1])
     lons_rad = deg_to_rad(data[:, :, 0])
- 
     x = R * (lons_rad - lon0_rad) * np.cos(lat0_rad)
     y = R * (lats_rad - lat0_rad)
- 
     xy_data = np.stack([x, y], axis=-1)
     return xy_data
 
@@ -487,7 +480,6 @@ def process_sequences(seq1, seq2):
     for i in range(1, len(seq1)):
         if seq1[i] == seq1[i-1]:
             seq2[i] = seq2[i-1]
-    
     return seq2
 
 
@@ -497,30 +489,25 @@ if __name__ == "__main__":
     sampleIndex = 10
     gen_data = readGenTraces(expIndex, sampleIndex)
 
-
-    with open('../data/tencent_scaler.pkl', 'rb') as f:
+    with open('../EvalData/tencent_scaler.pkl', 'rb') as f:
         loaded_scaler = pickle.load(f)
     print('loaded_scaler.mean_: ', loaded_scaler.mean_)
 
     gen_data = gen_data.reshape(-1, 2)  
-
     gen_data = loaded_scaler.inverse_transform(gen_data)
-
     gen_data = gen_data.reshape(-1, 144, 2)  # (7920, 144, 2)
     print('gen_data.shape: ', gen_data.shape) 
-
-    path = '/data2/shaochenyang/scywork/Mobility_Revision/DLModel/data/tencent_condition.pt'
+    
+    path = '../EvalData/tencent_condition.pt'
     tensor = torch.load(path)
     conditions = tensor.cpu().numpy()[-20000:]
     print('conditions.shape: ', conditions.shape)
-
     gen_data = latlon_array_to_xy_vectorized(gen_data)
-
     for i in range(gen_data.shape[0]):
         gen_data[i] = process_sequences(conditions[i], gen_data[i])
 
 
-    with open('/data2/shaochenyang/scywork/Mobility_Revision/Datasets/tencent/tencent_cate_trajs_44_sample14.pkl', "rb") as f:
+    with open('../EvalData/tencent_cate_trajs_44_sample14.pkl', "rb") as f:
         processed_trajectories = pickle.load(f)
     longlats = []
     processed_trajectories = random.sample(processed_trajectories, 20000)
@@ -528,22 +515,13 @@ if __name__ == "__main__":
         lat_lon = df[["Latitude", "Longitude"]].values
         longlats.append(lat_lon)
     longlats = np.array(longlats)
-    np.save('../data/tencent_realTrajs.npy', longlats)
+    np.save('../EvalData/tencent_realTrajs.npy', longlats)
 
 
-    real_data = np.load('../data/tencent_realTrajs.npy')
-
+    real_data = np.load('../EvalData/tencent_realTrajs.npy')
     real_data = latlon_array_to_xy_vectorized(real_data)
     print('real trajectories.shape: ', real_data.shape)
-
-    # print(np.max(real_data[:,:,0]))
-    # print(np.min(real_data[:,:,0]))
-    # print(np.max(real_data[:,:,1]))
-    # print(np.min(real_data[:,:,1]))
-    # sys.exit(0)
-    
     individualEval = IndividualEval()
     printMetrics2(individualEval.get_individual_jsds(gen_data, real_data))
-    # radius\Dailyloc\IntentDist\G-rank\LocFreq
 
 
